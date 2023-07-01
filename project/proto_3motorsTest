@@ -1,0 +1,55 @@
+// 직진 테스트를 위한 뒷바퀴와 앞바퀴 작동 코드입니다.
+
+const int potentiometerPin = A8;  // 가변 저항 연결 핀
+// 모터 핀 정방향이 1(앞으로)
+int motor_f_1 = 2;
+int motor_f_2 = 3;
+int motor_b_l_1 = 4; 
+int motor_b_l_2 = 5; 
+int motor_b_r_1 = 7; 
+int motor_b_r_2 = 6; 
+
+//스피드 전역변수
+int speed = 255;
+int rotation_speed = 255/4;
+
+//셋업
+void setup() {
+  pinMode(motor_f_1, OUTPUT);
+  pinMode(motor_f_2, OUTPUT);
+  pinMode(motor_b_l_1, OUTPUT); 
+  pinMode(motor_b_l_2, OUTPUT); 
+  pinMode(motor_b_r_1, OUTPUT); 
+  pinMode(motor_b_r_2, OUTPUT); 
+  Serial.begin(9600);
+}
+
+
+void loop() {
+  int potentiometerValue = analogRead(potentiometerPin);  // 가변 저항 값 읽기
+  Serial.println(potentiometerValue);  // 시리얼 모니터로 값 출력
+  
+  //////////// 모터 회전 제어
+
+  // 가변저항숫자 커지는게 왼쪽
+  // 앞바퀴 모터 1이 좌회전
+
+  // 뒷바퀴 모터 1이 앞으로 가는거
+  if (potentiometerValue >= 575) {
+    analogWrite(motor_f_1, 0);
+    analogWrite(motor_f_2, rotation_speed);
+  } else if (potentiometerValue <= 562) {
+    analogWrite(motor_f_1, rotation_speed);
+    analogWrite(motor_f_2, 0);
+  } else {
+    analogWrite(motor_f_1, 0);
+    analogWrite(motor_f_2, 0);
+  }
+
+  analogWrite(motor_b_l_1, speed); 
+  analogWrite(motor_b_l_2, 0);
+
+  analogWrite(motor_b_r_1, speed); 
+  analogWrite(motor_b_r_2, 0);
+
+}
