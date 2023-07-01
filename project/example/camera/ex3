@@ -1,0 +1,42 @@
+import Function_Library as fl
+
+EPOCH = 50000
+
+if __name__ == "__main__":
+    # Exercise Environment Setting
+    env = fl.libCAMERA()
+
+
+    #####################################################
+
+    # Camera Initial Setting
+    ch0, ch1 = env.initial_setting(capnum=2)
+
+    # Camera Reading..
+    for i in range(EPOCH):
+        _, frame0, _, frame1 = env.camera_read(ch0, ch1)
+
+
+        """ Exercise 3: Object Detection (Traffic Light Circle) """
+        #################### YOU MUST EDIT ONLY HERE ####################
+        color = env.object_detection(frame0, sample=1, mode = 'circle', print_enable=True)
+        '''object_detection(1, sample = 2, mode = 3, print_enable = 4)
+        1: 프레임 데이터
+        2: 신호등 색상 인지하는 샘플 개수(하이퍼 파라미터)
+        3: Hough 변환의 모드
+        예: circle
+        4: 출력 결과의 그림/색상 표시 여부
+        
+        Red: 0, Green: 1, Yellow: 3
+        '''
+        #################################################################
+
+        """ Exercise 4: Specific Edge Detection (Traffic Line) """
+        #################### YOU MUST EDIT ONLY HERE ####################
+        # direction = env.edge_detection(frame0, width=500, height=120,
+        #                                gap=40, threshold=150, print_enable=True)
+        #################################################################
+
+        # Process Termination (If you input the 'q', camera scanning is ended.)
+        if env.loop_break():
+            break
