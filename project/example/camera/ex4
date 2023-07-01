@@ -1,0 +1,37 @@
+import Function_Library as fl
+
+EPOCH = 50000
+
+if __name__ == "__main__":
+    # Exercise Environment Setting
+    env = fl.libCAMERA()
+
+
+    #####################################################
+
+    # Camera Initial Setting
+    ch0, ch1 = env.initial_setting(capnum=2)
+
+    # Camera Reading..
+    for i in range(EPOCH):
+        _, frame0, _, frame1 = env.camera_read(ch0, ch1)
+
+
+        """ Exercise 4: Specific Edge Detection (Traffic Line) """
+        #################### YOU MUST EDIT ONLY HERE ####################
+        direction = env.edge_detection(frame0, width=500, height=120,
+                                       gap=40, threshold=150, print_enable=True)
+
+    '''
+① Input1: 카메라로 받은 순간 프레임 데이터 입력
+② Input2: 관심영역[ROI]의 최대 가로 길이 입력
+③ Input3: 관심영역[ROI]의 최소 세로 길이 입력
+④ Input4: Pixel 분석에서 비교 대상과의 거리 차이 입력
+⑤ Input5: Pixel 분석에서 특정 Edge Line을 구분하기 위한 길이 조건 입력
+⑥ Input6: 출력 결과에 대한 그림과 방향 값을 표시할 것인지 여부 입력
+    '''
+        #################################################################
+
+        # Process Termination (If you input the 'q', camera scanning is ended.)
+        if env.loop_break():
+            break
