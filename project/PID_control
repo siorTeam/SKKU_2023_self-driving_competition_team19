@@ -1,0 +1,48 @@
+    #include <PID_v1.h>
+
+  const int potentiometerPin = A8;  // 가변저항 연결 핀
+  int motor_f_1 = 2;
+  int motor_f_2 = 3;
+
+  double setpoint = 569.0;  // 목표값
+  double input, output;     // PID 제어에 사용할 변수
+
+  //하이퍼 파라미터들 실험을 통해 측정(후중 증가에 따라 변동)
+  double kp = 7.8;  // P 제어기 수치: 이게 커질수록 회전 속도가 커짐(하중이 증가하면 수정)
+  //기본 p 상수 먼저 정하고, 그 다음 i d 순서
+  double ki = 0.0075;  // I 제어기 수치: 이거 커지면 멈춰있는 기본 값이 올라감->정지오차 수정 but 오버슈팅 주의
+  double kd = 0.6;  // D 제어기 수치: 변동 폭 감소
+
+  PID pid(&input, &output, &setpoint, kp, ki, kd, DIRECT);  // PID 객체 생성
+
+  void setup() {
+    pinMode(motor_f_1, OUTPUT);
+    pinMode(motor_f_2, OUTPUT);
+    Serial.begin(9600);
+    
+    // PID 제어 설정
+    pid.SetMode(AUTOMATIC);
+    pid.SetOutputLimits(-255, 255);  // 출력 제한 설정
+  }
+
+  void loop() {
+    int potentiometerValue = analogRead(potentiometerPin);  // 가변저항 값 읽기
+    Serial.println(potentiometerValue);  // 시리얼 모니터로 값 출력
+    
+    input = potentiometerValue;  // PID 입력값 설정
+    pid.Compute();               // PID 제어 계산
+
+    // DC 모터 회전 제어
+    if (output > 0) {
+      analogWrite(motor_f_1, output);  // 양방향 회전
+      analogWrite(motor_f_2, 0);
+    } else if (output < 0) {
+      analogWrite(motor_f_1, 0);
+      analogWrite(motor_f_2, -output);  // 역방향 회전
+    } else {
+      analogWrite(motor_f_1, 0);  // 정지
+      analogWrite(motor_f_2, 0);
+    }
+    
+    delay(100);
+  }
