@@ -1,0 +1,88 @@
+//차선의 각도, 차선과 자동차의 폭을 받아 주행하는 코드입니다.
+
+#include <PID_v1.h>
+double cmd[2];
+double line_angle_input;
+double width_input;
+double pid_input, pid_output;     // PID 제어에 사용할 변수
+
+/////Pins/////
+const int potentiometerPin = A8; 
+
+int motor_f_1 = 2;
+int motor_f_2 = 3;
+
+int motor_b_l_1 = 4; 
+int motor_b_l_2 = 5; 
+int motor_b_r_1 = 7; 
+int motor_b_r_2 = 6; 
+
+
+/////Hyper Parameters/////
+//angle
+int angleMax = 70;
+int angleMin = -70;
+int angle_forWeakRot = 10;
+int angle_forStrongRot = 40;
+
+//width
+int widthOffset = 10;
+//int w_gap = input width - widthOffset
+int w_gap_forWeakRot = 2;
+int w_gap_forStrongRot = 5;
+
+//potentiometer
+
+//motor
+int rotation_speed = 255/4;
+int speed = 255;
+
+//PID
+double setpoint = 570;
+double cons_agg = 3; // conservative aggressive 전환점
+
+double consKp = 2.0; //conservative control
+double consKi = 0.011;
+double consKd = 0.125;
+
+double aggKp = 10; // aggressive control
+double aggKi = 0.0075;
+double aggKd = 0.6;
+
+
+PID pid(&pid_input, &pid_output, &setpoint, consKp, consKi, consKd, DIRECT);  // PID 객체 생성
+
+void setup() {
+  pinMode(motor_f_1, OUTPUT);
+  pinMode(motor_f_2, OUTPUT);
+  pinMode(motor_b_l_1, OUTPUT); 
+  pinMode(motor_b_l_2, OUTPUT); 
+  pinMode(motor_b_r_1, OUTPUT); 
+  pinMode(motor_b_r_2, OUTPUT); 
+  Serial.begin(9600);
+  
+  // PID 제어 설정
+  pid.SetMode(AUTOMATIC);
+  pid.SetOutputLimits(-255, 255);  // 출력 제한 설정
+}
+
+void loop() {
+  int potentiometerValue = analogRead(potentiometerPin);  // 가변저항 값 읽기
+  double front_wheel_angle = (double)(potentiometerValue - setpoint) * 270.0 / 1023.0;  // 0부터 1023을 0부터 270으로 비례적으로 변환
+  Serial.print(front_wheel_angle);  // 가변저항에서 읽은 각도를 모니터로 값 출력
+  Serial.print(" degrees\n")
+
+  // 컴퓨터로부터 시리얼 통신이 전송되면, 한 줄씩 읽어와서 cmd 변수에 입력
+  if(Serial.available()){
+    String input = Serial.readStringUntil('\n');
+    sscanf(input.c_str(), "%lf %lf", &cmd[0], &cmd[1]);
+    line_angle_input = cmd[0];
+    width_input = cmd[1];
+    
+
+// output을 사용하여 원하는 작업을 수행
+
+
+  }  
+}
+가변저항 값을 각도의 형태로 출력까지만 했습니다.
