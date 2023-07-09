@@ -1,12 +1,23 @@
 import serial
 import time
 
-# 아두이노와의 시리얼 통신을 설정합니다.
-arduino = serial.Serial('COM8', 9600)  # COM 포트 번호와 보레이트를 적절히 설정합니다.
-time.sleep(2)  # 아두이노와의 연결을 위해 잠시 대기합니다.
+arduino = serial.Serial('COM8', 9600)
+time.sleep(2)
 
 while True:
-    message = input("아두이노에게 보낼 문자열을 입력하세요: ")
-    message = message.strip()  # 입력 문자열의 양쪽 공백과 개행 문자를 제거합니다.
-    arduino.write(message.encode())  # 문자열을 아두이노로 보냅니다.
-    time.sleep(0.1)  # 0.1초 대기합니다.
+    line_angle_input = input("차선의 각도를 입력하세요: ")
+    width_input = input("차선과 자동차의 폭을 입력하세요: ")
+
+    # 음수 값이면 '-'를 붙여서 전송
+    if float(line_angle_input) < 0:
+        line_angle_input = "-" + line_angle_input
+    if float(width_input) < 0:
+        width_input = "-" + width_input
+
+    message = f"{line_angle_input},{width_input}\n"
+    arduino.write(message.encode())
+    time.sleep(0.1)
+
+    # 아두이노로부터 입력 받은 응답을 버퍼를 비우기 위해 읽어옴
+    while arduino.in_waiting > 0:
+        arduino.readline()
