@@ -16,7 +16,6 @@ def py_serial(line_angle_input, width_input):
     # 숫자 두개를 하나의 문자열로 변환하여 통신(오버헤드 줄이려면 한 문자열로 하는게 좋음)
     message = f"{line_angle_input},{width_input}\n"
     arduino.write(message.encode())
-    time.sleep(0.05)
 
     # 아두이노로부터 입력 받은 응답을 버퍼를 비우기 위해 읽어옴
     while arduino.in_waiting > 0:
@@ -26,7 +25,7 @@ def py_serial(line_angle_input, width_input):
 def process_frame(frame):
     # 이미지 전처리
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_white = np.array([0, 0, 210], dtype=np.uint8)  # lower_white 값을 수정
+    lower_white = np.array([0, 0, 200], dtype=np.uint8)  # lower_white 값을 수정
     upper_white = np.array([179, 30, 255], dtype=np.uint8)
     mask = cv2.inRange(hsv, lower_white, upper_white)
 
@@ -55,7 +54,7 @@ def process_frame(frame):
             minWidth = 50  # 좌우 길이의 최소값 설정
             if line_width >= minWidth:  # 좌우 길이가 최소값 이상인 선만 처리
                 # 직선의 기울기 계산
-                if x2 - x1 != 0:  # 기울기가 수직선이 아닌 경우에만 계산 수행
+                if x2 - x1 != 0 and y2 - y1 != 0:  # 기울기가 수직선 또는 수평선이 아닌 경우에만 계산 수행
                     slope = (y2 - y1) / (x2 - x1)
 
                     # 80도에서 100도인 직선 무시
@@ -65,10 +64,9 @@ def process_frame(frame):
                         continue
 
                     # 직선이 화면 하단과 만나는 지점의 x 좌표 계산
-                    if y2 - y1 != 0:  # 기울기가 수평선이 아닌 경우에만 계산 수행
-                        intersection_x = int(x1 + (height - y1) * (x2 - x1) / (y2 - y1))
-                        # 직선 표시
-                        cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)
+                    intersection_x = int(x1 + (height - y1) * (x2 - x1) / (y2 - y1))
+                    # 직선 표시
+                    cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)
 
                 # 파이시리얼 통신 (현장에서 angle, distance_to_right_line 변수 확인 및 튜닝 필요)
                 angle = np.degrees(np.arctan(slope))
@@ -79,9 +77,10 @@ def process_frame(frame):
     # lines가 None인 경우에는 기본 값을 반환
     return frame, slope, intersection_x
 
+
 # 동영상 또는 카메라 입력을 사용하여 프레임을 읽어옴
 video_capture = cv2.VideoCapture(0)
-display_interval = 300  # 값을 출력하는 주기 (300 밀리초로 설정)
+display_interval = 50  # 값을 출력하는 주기 (300 밀리초로 설정)
 
 while True:
     ret, frame = video_capture.read()
