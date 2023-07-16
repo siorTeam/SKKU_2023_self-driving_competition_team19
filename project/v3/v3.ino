@@ -51,7 +51,7 @@ const double A_aggKd = 0.1;
 double CarLine_W, CarLine_A;
 double chng_sum;
 const double N_setpoint = 570;
-const double CarLine_W_offset = 560;
+const double CarLine_W_offset = 520;
 const double CarLine_A_offset = 1.43;
 
 PID pid(&pid_input, &pid_output, &setpoint, consKp, consKi, consKd, DIRECT);  // PID 객체 생성
@@ -132,24 +132,27 @@ void loop() {
     }
     //급회전시 감속
     if (abs(pid_output) >= 20){
-      speed = speed_offset;
-    } else {
       speed = speed_offset/3;
+    } else {
+      speed = speed_offset/2;
     }
 
+    // 뒷바퀴
     analogWrite(motor_b_l_1, speed); 
     analogWrite(motor_b_l_2, 0);
     analogWrite(motor_b_r_1, speed); 
     analogWrite(motor_b_r_2, 0);
 
     //##### 디버깅 정보 출력 #####//
+    // 체인지 값을  빼니까 -면 좌회전
     // Serial.println("potentiometerValue: " + String(potentiometerValue));
-    // Serial.println("W_pid_input: " + String(W_pid_input));
+    Serial.println("A_pid_input: " + String(A_pid_input));
     Serial.println("A_chng_output: " + String(A_chng_output));
+    Serial.println("W_pid_input: " + String(W_pid_input));
     Serial.println("W_chng_output: " + String(W_chng_output));
     // Serial.println("chng_sum: " + String(chng_sum));
     // Serial.println("setpoint: " + String(setpoint));
-    Serial.println("pid_output: " + String(pid_output));
+    // Serial.println("pid_output: " + String(pid_output));
     // Serial.println();
     delay(50);  // 딜레이
     //##### 디버깅 정보 출력 #####//
