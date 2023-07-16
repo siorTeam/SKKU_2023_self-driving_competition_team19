@@ -20,39 +20,33 @@ int speed_offset = 255;
 // 앞바퀴
 double setpoint;  // 목표값(튜닝 완료)
 double pid_input, pid_output;     // PID 제어에 사용할 변수
-const double consKp = 4.0;  // 보수적인 제어에 사용할 하이퍼 파라미터
+const double consKp = 4.0;  // 보수적인 제어에 사용할 하이퍼 파라미터닝
 const double consKi = 0.011;
 const double consKd = 0.125;
 const double aggKp = 10;  // 공격적인 제어에 사용할 하이퍼 파라미터
 const double aggKi = 0.0075;
 const double aggKd = 0.6;
-const double chng_max = 25; // (튜닝 필요)
+const double A_chng_max = 25; // (튜닝 필요)
+const double W_chng_max = 40; // (튜닝 필요)
+const double chng_max = 25;
 
 // 폭에 의한 제어값 변화량 (튜닝 필요)
-double W_setpoint = 100.0;  // 이상적인 차폭
+double W_setpoint = 520;  // 이상적인 차폭(offset)
 double W_pid_input, W_chng_output;     // 차선과의 폭 PID 제어에 사용할 변수
-const double W_consKp = 0.05;  // 보수적인 제어에 사용할 하이퍼 파라미터: 멀리 있을 때
+const double W_consKp = 1.4;  // 공격적인 제어에 사용할 하이퍼 파라미터: 가까이 있을 때
 const double W_consKi = 0.01;
 const double W_consKd = 0.1;
-const double W_aggKp = 1;  // 공격적인 제어에 사용할 하이퍼 파라미터: 가까이 있을 때
-const double W_aggKi = 0.01;
-const double W_aggKd = 0.1;
 
 // 폭에 의한 제어값 변화량 (튜닝 필요)
-double A_setpoint = 0.0;  // 이상적인 차폭
+double A_setpoint = 53.13;  // 이상적인 차폭 (offset) arctan (1.43)
 double A_pid_input, A_chng_output;     // 차선과의 폭 PID 제어에 사용할 변수
-const double A_consKp = 1.0;  // 보수적인 제어에 사용할 하이퍼 파라미터: 멀리 있을 때
+const double A_consKp = 1.5;  // 공격적인 제어에 사용할 하이퍼 파라미터: 가까이 있을 때
 const double A_consKi = 0.01;
 const double A_consKd = 0.1;
-const double A_aggKp = 1;  // 공격적인 제어에 사용할 하이퍼 파라미터: 가까이 있을 때
-const double A_aggKi = 0.01;
-const double A_aggKd = 0.1;
 
 double CarLine_W, CarLine_A;
 double chng_sum;
 const double N_setpoint = 570;
-const double CarLine_W_offset = 520;
-const double CarLine_A_offset = 1.43;
 
 PID pid(&pid_input, &pid_output, &setpoint, consKp, consKi, consKd, DIRECT);  // PID 객체 생성
 PID W_pid(&W_pid_input, &W_chng_output, &W_setpoint, W_consKp, W_consKi, W_consKd, DIRECT);  // 차선과 폭 제어 PID 객체 생성
@@ -72,9 +66,9 @@ void setup() {
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(-255, 255);  // 출력 제한 설정
   W_pid.SetMode(AUTOMATIC);
-  W_pid.SetOutputLimits(-chng_max, chng_max);  // 출력 제한 설정
+  W_pid.SetOutputLimits(-W_chng_max, W_chng_max);  // 출력 제한 설정
   A_pid.SetMode(AUTOMATIC);
-  A_pid.SetOutputLimits(-chng_max, chng_max);  // 출력 제한 설정
+  A_pid.SetOutputLimits(-A_chng_max, A_chng_max);  // 출력 제한 설정
 }
 
 void loop() {
@@ -89,27 +83,25 @@ void loop() {
 
     // #### 폭 차에 의한 PID 제어
     W_pid_input = CarLine_W;
-    if (abs(CarLine_W - CarLine_W_offset) < 8) {
-      W_pid.SetTunings(W_consKp, W_consKi, W_consKd);
-    } else {
-      W_pid.SetTunings(W_aggKp, W_aggKi, W_aggKd);
-    }
+    W_pid.SetTunings(W_consKp, W_consKi, W_consKd);
     W_pid.Compute();
 
     // #### 각도 차에 의한 PID 제어
     A_pid_input = CarLine_A;
-    if (abs(CarLine_A - CarLine_A_offset) < 8) {
-      A_pid.SetTunings(A_consKp, A_consKi, A_consKd);
-    } else {
-      A_pid.SetTunings(A_aggKp, A_aggKi, A_aggKd);
-    }
+    A_pid.SetTunings(A_consKp, A_consKi, A_consKd);
     A_pid.Compute();
 
     // #### 핸들 PID 제어
-    chng_sum = W_chng_output + A_chng_output;
-    chng_sum = constrain(chng_sum, -chng_max, chng_max);
-    pid_input = analogRead(potentiometerPin);
-    setpoint = N_setpoint - chng_sum;
+    if (not W_pid_input and not A_pid_input){ //제어 인풋 없을 경우 직진
+      setpoint = N_setpoint;
+    }
+    else{
+      chng_sum = W_chng_output + A_chng_output;
+      chng_sum = constrain(chng_sum, -chng_max, chng_max);
+      pid_input = analogRead(potentiometerPin);
+      setpoint = N_setpoint + chng_sum;
+    }
+
 
     double gap = abs(setpoint - pid_input);
     if (gap > 8) {
@@ -119,7 +111,17 @@ void loop() {
     }
     pid.Compute();
 
-    // DC 모터 회전 제어
+    // 앞바퀴 DC 모터 회전 제어
+    if (pid_output > 0) {
+      analogWrite(motor_f_1, pid_output);
+      analogWrite(motor_f_2, 0);
+    } else if (pid_output < 0) {
+      analogWrite(motor_f_1, 0);
+      analogWrite(motor_f_2, -pid_output);
+    } else {
+      analogWrite(motor_f_1, 0);
+      analogWrite(motor_f_2, 0);
+    }
     if (pid_output > 0) {
       analogWrite(motor_f_1, pid_output);
       analogWrite(motor_f_2, 0);
