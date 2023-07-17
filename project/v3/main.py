@@ -25,7 +25,7 @@ def py_serial(line_angle_input, width_input):
 def process_frame(frame):
     # 이미지 전처리
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower_white = np.array([0, 0, 200], dtype=np.uint8)  # lower_white 값을 수정
+    lower_white = np.array([0, 0, 180], dtype=np.uint8)  # lower_white 값을 수정
     upper_white = np.array([179, 30, 255], dtype=np.uint8)
     mask = cv2.inRange(hsv, lower_white, upper_white)
 
@@ -42,7 +42,7 @@ def process_frame(frame):
     masked_image = cv2.bitwise_and(mask, roi_mask)
 
     # 허프 변환을 사용하여 직선 검출
-    lines = cv2.HoughLinesP(masked_image, 1, np.pi / 180, 130, minLineLength=100, maxLineGap=50)
+    lines = cv2.HoughLinesP(masked_image, 1, np.pi / 180, 20, minLineLength=100, maxLineGap=50)
 
     angle = 0  # 초기화
     intersection_x = 0  # 초기화
@@ -54,22 +54,27 @@ def process_frame(frame):
             minWidth = 50  # 좌우 길이의 최소값 설정
             if line_width >= minWidth:  # 좌우 길이가 최소값 이상인 선만 처리
                 # 직선의 기울기 계산
-                if x2 - x1 != 0 and y2 - y1 != 0:  # 기울기가 수직선 또는 수평선이 아닌 경우에만 계산 수행
+                if x1 != x2 and y1 != y2 and (x2 - x1) != 0:
                     slope = (y2 - y1) / (x2 - x1)
 
-                    # 80도에서 100도인 직선 무시
+                    #평행 직선 무시
                     angle_threshold = 10  # 각도 기준 값
                     angle = np.degrees(np.arctan(slope))
-                    if (angle >= 80 and angle <= 100) and (angle <10 and angle > -10):
+                    if -angle_threshold < angle < angle_threshold:
                         continue
 
                     # 직선이 화면 하단과 만나는 지점의 x 좌표 계산
-                    intersection_x = int(x1 + (height - y1) * (x2 - x1) / (y2 - y1))
+                    try:
+                        intersection_x = int(x1 + (height - y1) * (x2 - x1) / (y2 - y1))
+                    except ZeroDivisionError:
+                        angle = 0
+                        intersection_x = 0
+                        continue
+
                     # 직선 표시
                     cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)
 
                 # 파이시리얼 통신 (현장에서 angle, distance_to_right_line 변수 확인 및 튜닝 필요)
-                intersection_x = int(x1 + (height - y1) * (x2 - x1) / (y2 - y1))
                 py_serial(str(angle), str(intersection_x))
                 return frame, angle, intersection_x
 
