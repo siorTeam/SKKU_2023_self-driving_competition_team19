@@ -6,24 +6,10 @@
 [센서별 연결 pin 정리]
 
 <초음파 센서>
-
-1번 센서 = 오른쪽 앞
-echo = 22 trig = 23 
-
-2번 센서 = 왼쪽 앞
-echo = 24 trig = 25 
-
-3번 센서 = 왼쪽 옆
-echo = 26 trig = 27 
-
-4번 센서 = 왼쪽 뒤
-echo = 28 trig = 29 
-
-5번 센서 = 오른쪽 뒤
-echo = 30 trig = 31 
-
-6번 센서 = 오른쪽 옆
-echo = 32 trig = 33 
+// 초음파 센서 핀 번호
+const int NUM_SENSORS = 6;
+const int echoPins[NUM_SENSORS] = {A0, A1, A2, A3, A4, A5};
+const int trigPins[NUM_SENSORS] = {23, 25, 27, 29, 31, 33};
 
 <모터> (핀기준:PWM)
 
