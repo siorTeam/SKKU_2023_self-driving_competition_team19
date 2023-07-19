@@ -121,9 +121,9 @@ void loop() {
     }
     //급회전시 감속
     if (abs(pid_output) >= chng_max - 1){
-      speed = speed_offset/1.8;
+      speed = speed_offset/4;
     } else {
-      speed = speed_offset/1.5;
+      speed = speed_offset/2;
     }
     // 뒷바퀴
     analogWrite(motor_b_l_1, speed);
@@ -137,9 +137,9 @@ void loop() {
     Serial.println("A_chng_output: " + String(A_chng_output));
     // Serial.println("W_pid_input: " + String(W_pid_input));
     Serial.println("W_chng_output: " + String(W_chng_output));
-    // Serial.println("chng_sum: " + String(chng_sum));
+    Serial.println("chng_sum: " + String(chng_sum));
     // Serial.println("setpoint: " + String(setpoint));
-    Serial.println("pid_output: " + String(pid_output));
+    // Serial.println("pid_output: " + String(pid_output));
     Serial.println();
     // delay(50);  // 딜레이
     //##### 디버깅 정보 출력 #####//
