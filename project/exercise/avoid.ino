@@ -69,6 +69,41 @@ void setup() {
   A_pid.SetOutputLimits(-A_chng_max, A_chng_max);
 }
 
+// Function to implement obstacle avoidance
+void obstacle_avoidance() {
+  // Stop the car
+  analogWrite(motor_f_1, 0);
+  analogWrite(motor_f_2, 0);
+  analogWrite(motor_b_l_1, 0);
+  analogWrite(motor_b_l_2, 0);
+  analogWrite(motor_b_r_1, 0);
+  analogWrite(motor_b_r_2, 0);
+
+  delay(1000);  // Wait for 1 second
+
+  // Turn left for 4 seconds (assuming you have appropriate motor control logic in Arduino)
+  analogWrite(motor_f_1, 0);
+  analogWrite(motor_f_2, 255);
+  analogWrite(motor_b_l_1, 0);
+  analogWrite(motor_b_l_2, 255);
+  analogWrite(motor_b_r_1, 0);
+  analogWrite(motor_b_r_2, 0);
+
+  delay(4000);
+
+  // Turn right for 4 seconds
+  analogWrite(motor_f_1, 255);
+  analogWrite(motor_f_2, 0);
+  analogWrite(motor_b_l_1, 255);
+  analogWrite(motor_b_l_2, 0);
+  analogWrite(motor_b_r_1, 0);
+  analogWrite(motor_b_r_2, 0);
+
+  delay(4000);
+
+  // Resume normal operation
+}
+
 void loop() {
   if (Serial.available()) {
     String receivedString = Serial.readStringUntil('\n');
@@ -80,11 +115,8 @@ void loop() {
 
     // Check if the Python code sent "0" to indicate obstacle avoidance
     if (CarLine_A == 0 && CarLine_W == 0) {
-      // Implement the logic for obstacle avoidance here.
-      // For example, you can turn left and right as needed.
-      // You already have the relevant motor control code, so use it here.
-      
-      // ### Implement obstacle avoidance logic here ###
+      // Implement the obstacle avoidance logic here
+      obstacle_avoidance();
 
     } else {
       // Implement the existing PID control logic here.
@@ -130,9 +162,4 @@ void loop() {
 
       // 뒷바퀴
       analogWrite(motor_b_l_1, speed);
-      analogWrite(motor_b_l_2, 0);
-      analogWrite(motor_b_r_1, speed);
-      analogWrite(motor_b_r_2, 0);
-    }
-  }
-}
+      analogWrite(motor_b_l_2, 
