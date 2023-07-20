@@ -117,7 +117,7 @@ void loop() {
 
       // 회피 구동중에는 아얘 다른 함수
     if (!avoiding) { // 회피중이 아닐 때
-      if (distance1 < 120 and avoide_num == 1) { // 장애물 1 만남 -> 커맨드 1 생성, 기본 넘버는 2
+      if (distance1 < 150 and avoide_num == 1) { // 장애물 1 만남 -> 커맨드 1 생성, 기본 넘버는 2
         speed = 0;
         HandleBackMotor();
         delay(500);
@@ -139,7 +139,7 @@ void loop() {
     if (avoiding == true and avoide_num == 1) {
       unsigned long currentTime1 = millis();
       unsigned long avoidingTime1 = currentTime1 - avoidStartTime1;
-      if (avoidingTime1 < 10000) {    // 4초 동안 회피 구동을 수행
+      if (avoidingTime1 < 10000) {    // 10초 동안 회피 구동을 수행
         // 왼쪽으로 회피
         setpoint = (N_setpoint + chng_max); 
         HandleFrontMotor();
@@ -148,7 +148,7 @@ void loop() {
 
         Serial.print("avoidingTime1: ");
         Serial.println(avoidingTime1);
-      } else if (avoidingTime1 < 15000) { // 회피 구동 시간이 지나면, 다시 원래 주행 방향으로 복귀하는 동작 수행
+      } else if (avoidingTime1 < 18000) { // 18초간 직진. 회피 구동 시간이 지나면, 다시 원래 주행 방향으로 복귀하는 동작 수행
         setpoint = CalculateSetpoint(W_input);
         HandleFrontMotor();
         SpeedControl();
@@ -165,7 +165,7 @@ void loop() {
     if (avoiding == true and avoide_num == 2) {
       unsigned long currentTime2 = millis();
       unsigned long avoidingTime2 = currentTime2 - avoidStartTime2;
-      if (avoidingTime2 < 10000) {    // 4초 동안 회피 구동을 수행
+      if (avoidingTime2 < 10000) {    // 10초 동안 회피 구동을 수행
         // 오른쪽으로 회피
         setpoint = (N_setpoint - chng_max); 
         HandleFrontMotor();
