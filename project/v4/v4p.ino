@@ -159,7 +159,7 @@ void loop() {
         speed = 0;
         HandleBackMotor();
       } else if (avoidingTime1 < 41000){ // 11 앞으로
-        setpoint = (N_setpoint); 
+        setpoint = CalculateSetpoint(W_input);
         HandleFrontMotor();
         speed = 50;
         HandleBackMotor();
